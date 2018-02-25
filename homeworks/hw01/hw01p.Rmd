@@ -1,7 +1,7 @@
 ---
 title: "HW01p"
-author: "Your Name Here"
-date: "February x, 2018"
+author: "Adina Becchofer"
+date: "February 23, 2018"
 output: pdf_document
 ---
 
@@ -16,13 +16,14 @@ To "hand in" the homework, you should compile or publish this file into a PDF th
 First, install the package `testthat` (a widely accepted testing suite for R) from https://github.com/r-lib/testthat using `pacman`. If you are using Windows, this will be a long install, but you have to go through it for some of the stuff we are doing in class. LINUX (or MAC) is preferred for coding. If you can't get it to work, install this package from CRAN (still using `pacman`), but this is not recommended long term.
 
 ```{r}
-#TO-DO
+if (!require("pacman")){install.packages("pacman")}
+pacman::p_load(testthat)
 ```
 
 1. Use the `seq` function to create vector `v` consisting of all numbers from -100 to 100. 
 
 ```{r}
-#TO-DO
+v = seq(-100, 100)
 ```
 
 Test using the following code:
@@ -36,7 +37,20 @@ If there are any errors, the `expect_equal` function will tell you about them. I
 2. Create a function `my_reverse` which takes as required input a vector and returns the vector in reverse where the first entry is the last entry, etc. No function calls are allowed inside your function (otherwise that would defeat the purpose of the exercise).
 
 ```{r}
-#TO-DO
+my_reverse = function(v){
+  len = 0
+  v_rev =c()
+  
+  for (i in v){ 
+    len= len+1
+    }
+  
+  for (j in 1:len){
+    v_rev[j] =v[len+ 1-j]
+  }
+  
+v_rev
+}
 ```
 
 Test using the following code:
@@ -50,21 +64,44 @@ expect_equal(my_reverse(v), rev(v))
 
 ```{r}
 n = 50
-#TO-DO
+v1 = rep(c(0,0,1,2), (n*n)/4)
+v1 = sample(v1)
+R = matrix(v1,ncol= n)
 ```
 
 Test using the following and write two more tests as specified below:
 
 ```{r}
 expect_equal(dim(R), c(n, n))
-#TO-DO test that the only unique values are 0, 1, 2
-#TO-DO test that there are exactly 625 2's
+
+are_they = TRUE
+for (i in R){
+  if (i != 0 & i!=1 & i !=2){
+    are_they = FALSE
+  }
+}
+expect_equal(are_they, TRUE)
+
+num2 =0
+for (i in R){
+  if (i==2){
+    num2 = num2 +1 
+  }
+}
+expect_equal(num2, 625)
 ```
 
 4. Randomly punch holes (i.e. `NA`) values in this matrix so that approximately 30% of the entries are missing.
 
 ```{r}
-#TO-DO
+for (i in 1:n){
+  for (j in 1:n){
+    if (rbinom(1,1, 0.3) == 1){
+      R[i, j]=NA
+    }
+  }
+}
+
 ```
 
 Test using the following code. Note this test may fail 1/100 times.
@@ -78,14 +115,21 @@ expect_gt(num_missing_in_R, qbinom(0.005, n^2, 0.3))
 5. Sort the rows matrix `R` by the largest row sum to lowest. See 2/3 way through practice lecture 3 for a hint.
 
 ```{r}
-#TO-DO
+r_names =c()
+for (i in 1:n){
+  r_names= c(r_names, sum(R[i,], na.rm = TRUE) )
+  
+}
+rownames(R)= r_names
+R = R[order(rownames(R), decreasing = TRUE), ] 
+
 ```
 
 Test using the following code.
 
 ```{r}
 for (i in 2 : n){
-  expect_gt(sum(R[i - 1, ], na.rm = TRUE), sum(R[i, ], na.rm = TRUE))  
+  expect_gte(sum(R[i - 1, ], na.rm = TRUE), sum(R[i, ], na.rm = TRUE))  
 }
 
 ```
@@ -94,29 +138,34 @@ for (i in 2 : n){
 6. Create a vector `v` consisting of a sample of 1,000 iid normal realizations with mean -10 and variance 10.
 
 ```{r}
-#TO-DO
+v = rnorm(1000, -10, sqrt(10))
 ```
 
 
 Find the average of `v` and the standard error of `v`.
 
 ```{r}
-#TO-DO
+mean(v)
+sem = sd(v)/sqrt(length(v))
+sem
 ```
 
 Find the 5%ile of `v` and use the `qnorm` function as part of a test to ensure it is correct based on probability theory.
 
 ```{r}
-#TO-DO
-#expect_equal(..., tol = )
+d = as.numeric(quantile(v, .05))
+five_percentile = qnorm(.05,-10,sqrt(10))
+expect_equal(d, five_percentile, tol = sem)
 ```
 
 Find the sample quantile corresponding to the value -7000 of `v` and use the `pnorm` function as part of a test to ensure it is correct based on probability theory.
 
 
 ```{r}
-#TO-DO
-#expect_equal(..., tol = )
+inverse_quantile_obj = ecdf(v)
+qntl_v = inverse_quantile_obj(-7000)
+n_qntl = pnorm(-7000, -10, sqrt(10))
+expect_equal( qntl_v, n_qntl, tol = sem)
 ```
 
 
@@ -124,14 +173,18 @@ Find the sample quantile corresponding to the value -7000 of `v` and use the `pn
 
 
 ```{r}
-#TO-DO
+keys = c("A", "B", "C", "D", "E", "F", "G", "H")
+my_list = list()
+for (i in 1:8){
+  my_list[[keys[i] ]]= array(seq(1,i**i), dim = rep(i, i))
+}
 ```
 
 Test with the following uncomprehensive tests:
 
 
 ```{r}
-expect_equal(my_list$A, 1)
+expect_equal(my_list$A, array(1))
 expect_equal(my_list[[2]][, 1], 1 : 2)
 expect_equal(dim(my_list[["H"]]), rep(8, 8))
 ```
@@ -146,10 +199,15 @@ Use `?lapply` and `?object.size` to read about what these functions do. Then exp
 
 Answer here in English.
 
+lapply trakes in a list and a sfunction, it returns a lits of outputs of of the function applied to every item in the inputed list. 
+object.size returns an estimate of the memory being used to store the object. 
+In my opinion, giving dimensoins to the large arrays is pointless, because the structure isn't meaningful, and it ueses up a few extra bytes in memory. 
+
+
 Now cleanup the namespace by deleting all stored objects and functions:
 
 ```{r}
-#TO-DO
+rm(list=ls())
 ```
 
 ## Basic Binary Classification Modeling
@@ -157,42 +215,86 @@ Now cleanup the namespace by deleting all stored objects and functions:
 8. Load the famous `iris` data frame into the namespace. Provide a summary of the columns and write a few descriptive sentences about the distributions using the code below and in English.
 
 ```{r}
-#TO-DO
+data(iris)
+Xy = iris
+summary(Xy)
 ```
 
 The outcome metric is `Species`. This is what we will be trying to predict. However, we have only done binary classification in class (i.e. two classes). Thus the first order of business is to drop one class. Let's drop the level "virginica" from the data frame.
 
 ```{r}
-#TO-DO
+Xy = Xy[Xy$Species != "virginica",]
+
 ```
 
 Now create a vector `y` that is length the number of remaining rows in the data frame whose entries are 0 if "setosa" and 1 if "versicolor".
 
 ```{r}
-#TO-DO
+y = as.numeric(Xy$Species == "versicolor")
 ```
 
 9. Fit a threshold model to `y` using the feature `Sepal.Length`. Try to write your own code to do this. What is the estimated value of the threshold parameter? What is the total number of errors this model makes?
 
 ```{r}
-#TO-DO
+Xy_ordered = Xy[order(Xy[,1]),]
+X1 = Xy_ordered[,1, drop = F]
+y_ordered = as.numeric(Xy_ordered$Species == "versicolor")
+w = X1[1,]
+max_iter = 100
+min_err = length(y_ordered) 
+
+
+for (i in 1:nrow(X1)){
+  y_hat = ifelse(X1> w, 1, 0)
+  err = sum(y_ordered !=  y_hat)
+  if (err < min_err){
+    min_err = err
+  }
+  else w = X1[i,]
+ 
+}
+w
+
+y_hat = ifelse(X1> w, 1, 0)
+err = sum(y !=  y_hat)
+
+err
+
 ```
 
 Does this make sense given the following summaries:
 
 ```{r}
 summary(iris[iris$Species == "setosa", "Sepal.Length"])
-summary(iris[iris$Species == "virginica", "Sepal.Length"])
+summary(iris[iris$Species == "versicolor", "Sepal.Length"])
 ```
 
 Write your answer here in English.
 
+Yes. The means of sepal leangths are too close to each other, and a significant part of the range overlaps. There's no way a threshold to seperate them can be acheived. 
+
 10. Fit a perceptron model explaining `y` using all three features. Try to write your own code to do this. Provide the estimated parameters (i.e. the four entries of the weight vector)? What is the total number of errors this model makes?
 
 ```{r}
-#TO-DO
-```
+w_vec = rep(0,4)
 
+X1 = as.matrix(cbind(1, Xy[, seq(1, 3), drop = FALSE]))
+max_iter = 100
+for (iter in 1 : max_iter){  
+  for (i in 1 : nrow(X1)){
+    x_i = X1[i, ]
+    yhat_i = ifelse(sum(x_i * w_vec) > 0, 1, 0)
+    y_i = y[i]
+    w_vec = w_vec + (y_i - yhat_i) * x_i
+  }
+}
+w_vec
+
+yhat = ifelse(X1 %*% w_vec > 0, 1, 0)
+err = sum(y != yhat)
+err
+
+```
 
 
 
